@@ -10,10 +10,7 @@ Unauthorized`.** Inspirada em `nomore403`, porém reescrita do zero com
 **libcurl + pthreads**: binário único, sem runtime, altamente concorrente.
 
 <p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: light)" srcset="docs/demo-light.svg">
-    <img alt="403-bypass encontrando bypasses de verbo e path" src="docs/demo.svg" width="100%">
-  </picture>
+  <img alt="403-bypass encontrando bypasses de verbo e path" src="docs/demo.svg" width="100%">
 </p>
 
 > ⚠️ **Uso autorizado apenas.** Rode somente contra sistemas que você tem
