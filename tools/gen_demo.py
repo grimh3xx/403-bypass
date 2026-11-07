@@ -76,16 +76,37 @@ def build_lines(th):
 
 
 def render(suffix):
+    """SVG de terminal ANIMADO: revela as linhas em sequencia, em loop, com
+    cursor piscando — mesmo mecanismo CSS do svg-term (asciinema)."""
     th = THEMES[suffix]
-    lines = build_lines(th)
+    lines = build_lines(th) + [[seg("$ ", "green", True)]]   # prompt final
     pad_x, bar_h, top, lh, fs = 26, 40, 16, 21, 14.5
     ch = fs * 0.6
     w = 900
-    h = bar_h + top + len(lines) * lh + top
+    n = len(lines)
+    h = bar_h + top + n * lh + top
+    ti, hold = 0.20, 2.4            # s por linha + pausa no fim
+    dur = n * ti + hold
+
+    # CSS: cada linha segura opacity 0 ate seu instante e fica ate o fim; como
+    # todas compartilham a mesma duracao e loop, a animacao reinicia junta.
+    css = [".l{opacity:0;animation-duration:%.2fs;"
+           "animation-iteration-count:infinite;"
+           "animation-timing-function:steps(1,end)}" % dur]
+    for i in range(1, n):   # a linha 0 (comando) fica sempre visivel
+        p = (i * ti) / dur * 100.0
+        p2 = min(p + 0.3, 99.8)
+        css.append("@keyframes L%d{0%%{opacity:0}%.2f%%{opacity:0}"
+                   "%.2f%%{opacity:1}100%%{opacity:1}}" % (i, p, p2))
+    css.append("@keyframes blink{0%%{opacity:1}50%%{opacity:1}"
+               "51%%{opacity:0}100%%{opacity:0}}")
+    css.append(".cur{animation:blink 1s steps(1) infinite;fill:%s}" % th["cyan"])
+    style = "<style>" + "".join(css) + "</style>"
 
     parts = [
         f'<svg xmlns="http://www.w3.org/2000/svg" width="{w}" height="{int(h)}" '
-        f'viewBox="0 0 {w} {int(h)}" role="img" aria-label="403-bypass demo">',
+        f'viewBox="0 0 {w} {int(h)}" role="img" aria-label="403-bypass demo (animado)">',
+        style,
         '<defs>'
         f'<linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">'
         f'<stop offset="0" stop-color="{th["bg"]}"/><stop offset="1" stop-color="{th["bg2"]}"/></linearGradient>'
@@ -102,15 +123,22 @@ def render(suffix):
     ]
 
     y = bar_h + top + fs
-    for line in lines:
+    for i, line in enumerate(lines):
         x = pad_x
+        spans = []
         for text, color, bold in line:
             fill = th[color] if color else th["text"]
             weight = ' font-weight="700"' if bold else ""
-            parts.append(
-                f'<text x="{x:.1f}" y="{y:.1f}" font-family="{MONO}" font-size="{fs}" '
-                f'fill="{fill}"{weight} xml:space="preserve">{escape(text)}</text>')
+            spans.append(f'<tspan x="{x:.1f}" fill="{fill}"{weight}>{escape(text)}</tspan>')
             x += len(text) * ch
+        cls = "" if i == 0 else f' class="l" style="animation-name:L{i}"'
+        parts.append(
+            f'<text{cls} y="{y:.1f}" '
+            f'font-family="{MONO}" font-size="{fs}" xml:space="preserve">'
+            + "".join(spans) + '</text>')
+        if i == n - 1:
+            parts.append(f'<rect class="cur" x="{x+2:.1f}" y="{y-fs+3:.1f}" '
+                         f'width="{ch*0.9:.1f}" height="{fs-1:.1f}"/>')
         y += lh
     parts.append(f'</g><rect x="0.5" y="0.5" width="{w-1}" height="{int(h)-1}" rx="12" '
                  f'fill="none" stroke="{th["border"]}"/>')
