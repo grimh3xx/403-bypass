@@ -1,0 +1,13 @@
+# binarios e objetos
+403-bypass
+*.o
+*.obj
+
+# build dirs
+build/
+cmake-build-*/
+
+# editores
+.vscode/
+.idea/
+*.swp
