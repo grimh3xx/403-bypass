@@ -7,6 +7,8 @@ Ferramenta rápida, escrita em **C**, para testar bypasses de respostas
 Inspirada em projetos como `nomore403`, porém reescrita do zero em C puro
 com **libcurl + pthreads**: binário único, sem runtime, altamente concorrente.
 
+![403-bypass](docs/screenshot.png)
+
 > ⚠️ **Uso autorizado apenas.** Rode somente contra sistemas que você tem
 > permissão explícita para testar. O uso contra terceiros sem autorização
 > é ilegal. Você é o único responsável pelo uso desta ferramenta.
