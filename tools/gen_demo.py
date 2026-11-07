@@ -11,7 +11,7 @@ from pathlib import Path
 from xml.sax.saxutils import escape
 
 ROOT = Path(__file__).resolve().parent.parent
-OUT = ROOT / "assets"
+OUT = ROOT / "docs"
 
 BRAND = Path.home() / "github-profile" / "scripts"
 sys.path.insert(0, str(BRAND))
