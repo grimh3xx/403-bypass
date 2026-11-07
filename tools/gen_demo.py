@@ -52,27 +52,25 @@ def seg(t, c=None, b=False):
 def build_lines(th):
     lines = [
         [seg("$ ", "green", True),
-         seg("403-bypass -u https://target.tld/admin -t 30 --only verb,path")],
+         seg("403-bypass -u https://target.tld/admin -H 'Cookie: sess=…' -mc 200,302")],
         [],
     ]
     lines += [[seg(b, "cyan", True)] for b in BANNER]
     lines += [
         [seg("  403/401 bypass toolkit · authorized use only", "muted")],
         [],
-        [seg("  alvo     https://target.tld/admin", "muted")],
         [seg("  baseline status="), seg("403", "red", True), seg("  0B")],
+        [seg("  calib    status="), seg("404", "amber", True),
+         seg("  233B   (path aleatorio, anti falso-positivo)", "muted")],
         [seg("  cod  tecnica   metodo   payload", "muted")],
-        [seg("  403", "red", True), seg("  verb      GET      metodo GET")],
         [seg("  200", "green", True), seg("  verb      OPTIONS  metodo OPTIONS      "),
          seg("<== BYPASS?", "green", True)],
-        [seg("  403", "red", True), seg("  header-ip GET      X-Forwarded-For: 127.0.0.1")],
-        [seg("  200", "green", True), seg("  path      GET      /admin/..;/         "),
+        [seg("       curl -sk -X OPTIONS -H 'Cookie: sess=…' "
+             "'https://target.tld/admin'", "muted")],
+        [seg("  302", "cyan", True), seg("  path      GET      /admin/..;/         "),
          seg("<== BYPASS?", "green", True)],
-        [seg("  28 testes executados, "), seg("2 bypass(es) provavel(is)", "green", True)],
-        [],
-        [seg("$ ", "green", True), seg("make  &&  ./403-bypass -f urls.txt -o out.json")],
-        [seg("  cc -O2 ... -o 403-bypass    "), seg("BUILD OK", "green", True),
-         seg("  (0 warnings)", "muted")],
+        [seg("  403", "red", True), seg("  header-ip GET      X-Forwarded-For: 127.0.0.1")],
+        [seg("  98 testes executados, "), seg("2 bypass(es) provavel(is)", "green", True)],
     ]
     return lines
 

@@ -39,4 +39,12 @@ extern const size_t       PL_PATH_MUTATIONS_N;
 extern const char *const PL_PATH_SUFFIXES[];
 extern const size_t       PL_PATH_SUFFIXES_N;
 
+/* Valores de Host header para a tecnica de spoof de Host. */
+extern const char *const PL_HOST_VALUES[];
+extern const size_t       PL_HOST_VALUES_N;
+
+/* User-Agents para rotacao (--random-agent). */
+extern const char *const PL_USER_AGENTS[];
+extern const size_t       PL_USER_AGENTS_N;
+
 #endif /* TRESPASS_PAYLOADS_H */

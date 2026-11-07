@@ -1,0 +1,131 @@
+.TH 403-BYPASS 1 "2026" "403-bypass 0.3.0" "User Commands"
+.SH NAME
+403-bypass \- toolkit de bypass de 403/401 para testes autorizados
+.SH SYNOPSIS
+.B 403-bypass
+.RB ( \-u
+.IR url " | " \-f
+.IR arquivo ")"
+.RI [ opcoes ]
+.SH DESCRIPTION
+.B 403-bypass
+testa tecnicas conhecidas de contornar respostas
+.B 403 Forbidden
+e
+.B 401 Unauthorized
+em servidores web: verb tampering, headers de IP interno, reescrita de URL,
+mutacoes de path (incluindo Unicode/double-encoding), troca de caixa e spoof
+de Host. Faz uma requisicao baseline e calibra com um path aleatorio para
+reduzir falsos positivos, e compara status, tamanho e numero de palavras.
+.PP
+Use apenas contra sistemas que voce esta autorizado a testar.
+.SH OPTIONS
+.SS Alvo
+.TP
+.BR \-u ", " \-\-url " \fIurl\fR"
+URL alvo.
+.TP
+.BR \-f ", " \-\-file " \fIarquivo\fR"
+Arquivo com uma URL por linha (\fB\-\fR = stdin).
+.SS Requisicao
+.TP
+.BR \-H ", " \-\-header " \fIh\fR"
+Header fixo em toda requisicao (ex.: \fBCookie: a=b\fR). Repetivel.
+.TP
+.BR \-A ", " \-\-user\-agent " \fIua\fR"
+User-Agent customizado.
+.TP
+.B \-\-random\-agent
+Rotaciona o User-Agent por requisicao.
+.TP
+.BR \-x ", " \-\-proxy " \fIurl\fR"
+Proxy (ex.: http://127.0.0.1:8080).
+.TP
+.BR \-\-http1.0 ", " \-\-http1.1 ", " \-\-http2
+Forca a versao de HTTP.
+.TP
+.B \-\-ip \fIvalor\fR
+IP/host unico para os headers de spoof.
+.TP
+.BR \-k ", " \-\-insecure
+Nao validar certificado TLS.
+.TP
+.BR \-L ", " \-\-location
+Seguir redirecionamentos.
+.SS Desempenho
+.TP
+.BR \-t ", " \-\-threads " \fIn\fR"
+Threads concorrentes (padrao 20).
+.TP
+.BR \-T ", " \-\-timeout " \fIms\fR"
+Timeout por requisicao (padrao 7000).
+.TP
+.B \-\-delay \fIms\fR
+Atraso apos cada requisicao (rate limit).
+.TP
+.B \-\-retries \fIn\fR
+Retries em erro de transporte.
+.SS Tecnicas
+.TP
+.B \-\-only \fIlista\fR
+Seleciona tecnicas: verb,ip,rewrite,path,case,host.
+.TP
+.B \-\-combine
+Tambem testa tecnicas combinadas (header+path, verb+path).
+.TP
+.B \-\-headers \fIarq\fR
+Wordlist de nomes de header extra.
+.TP
+.B \-\-paths \fIarq\fR
+Wordlist de mutacoes de path (\fB%s\fR = path alvo).
+.SS Match / filter
+.TP
+.B \-mc \fIlista\fR
+So conta como hit estes status (ex.: 200,302).
+.TP
+.B \-fc \fIlista\fR
+Ignora estes status.
+.TP
+.B \-fs \fIlista\fR
+Ignora estes tamanhos de corpo.
+.TP
+.B \-fw \fIlista\fR
+Ignora estas contagens de palavras.
+.TP
+.B \-\-no\-calibrate
+Nao calibrar com path aleatorio.
+.SS Saida
+.TP
+.BR \-o ", " \-\-output " \fIarq\fR"
+Salva em arquivo (\fB\-\fR = stdout).
+.TP
+.B \-\-format \fIfmt\fR
+json | csv (inferido da extensao de \-o).
+.TP
+.BR \-a ", " \-\-all
+Mostra todos os resultados, nao so os hits.
+.TP
+.BR \-s ", " \-\-quiet
+So hits e resumo.
+.TP
+.BR \-v ", " \-\-verbose
+Mostra erros de transporte.
+.TP
+.B \-\-no\-curl
+Nao imprime o curl reproduzivel.
+.TP
+.B \-\-version
+Mostra a versao e sai.
+.SH EXAMPLES
+.TP
+Varredura autenticada com match de status:
+.B 403-bypass \-u https://alvo.tld/admin \-H 'Cookie: s=...' \-mc 200,302
+.TP
+Batch com tecnicas combinadas e saida JSON:
+.B 403-bypass \-f urls.txt \-\-combine \-\-random\-agent \-o saida.json
+.SH EXIT STATUS
+0 em sucesso, 1 em erro de uso ou falha fatal.
+.SH AUTHOR
+grimh3xx
+.SH SECURITY
+Uso autorizado apenas. O autor nao se responsabiliza por uso indevido.

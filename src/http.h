@@ -20,6 +20,11 @@ typedef struct {
     const char *proxy;        /* ex: http://127.0.0.1:8080     */
     const char *user_agent;   /* User-Agent padrao             */
     long   delay_ms;          /* atraso apos cada req (rate)   */
+
+    int    http_version;      /* 0=auto, 1=HTTP/1.0, 2=1.1, 3=2 */
+    int    retries;           /* retries em erro de transporte  */
+    char *const *extra_headers;  /* headers aplicados a TODA req */
+    int    n_extra_headers;
 } http_config_t;
 
 /* Inicializa a camada HTTP global (chamar uma vez no inicio). */

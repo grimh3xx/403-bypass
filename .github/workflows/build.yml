@@ -17,5 +17,8 @@ jobs:
       - name: Compilar
         run: make
 
+      - name: Testes (mock server)
+        run: make test
+
       - name: Smoke test
-        run: ./403-bypass --help
+        run: ./403-bypass --version

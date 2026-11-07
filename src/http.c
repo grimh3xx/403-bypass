@@ -96,6 +96,11 @@ int http_request(const char *method,
         }
         hlist = tmp;
     }
+    /* headers globais (-H), aplicados a toda requisicao */
+    for (int i = 0; i < cfg->n_extra_headers; i++) {
+        struct curl_slist *tmp = curl_slist_append(hlist, cfg->extra_headers[i]);
+        if (tmp) hlist = tmp;
+    }
 
     curl_easy_setopt(curl, CURLOPT_URL, url);
     curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, method);
@@ -122,7 +127,26 @@ int http_request(const char *method,
      * payloads como /..;/ cheguem exatamente como escritos. */
     curl_easy_setopt(curl, CURLOPT_PATH_AS_IS, 1L);
 
-    CURLcode rc = curl_easy_perform(curl);
+    if (cfg->http_version == 1)
+        curl_easy_setopt(curl, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_0);
+    else if (cfg->http_version == 2)
+        curl_easy_setopt(curl, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
+    else if (cfg->http_version == 3)
+        curl_easy_setopt(curl, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_2TLS);
+
+    /* retries em erros de transporte transitorios */
+    CURLcode rc = CURLE_OK;
+    int attempts = cfg->retries > 0 ? cfg->retries + 1 : 1;
+    for (int at = 0; at < attempts; at++) {
+        buf.len = 0;  /* zera o corpo acumulado entre tentativas */
+        rc = curl_easy_perform(curl);
+        if (rc == CURLE_OK)
+            break;
+        if (rc != CURLE_OPERATION_TIMEDOUT && rc != CURLE_COULDNT_CONNECT &&
+            rc != CURLE_RECV_ERROR && rc != CURLE_SEND_ERROR &&
+            rc != CURLE_GOT_NOTHING)
+            break;  /* nao transitorio: nao insiste */
+    }
 
     int ret = 0;
     if (rc != CURLE_OK) {

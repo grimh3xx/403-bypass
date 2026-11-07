@@ -96,6 +96,34 @@ const char *const PL_PATH_MUTATIONS[] = {
 const size_t PL_PATH_MUTATIONS_N =
     sizeof(PL_PATH_MUTATIONS) / sizeof(PL_PATH_MUTATIONS[0]);
 
+const char *const PL_HOST_VALUES[] = {
+    "localhost",
+    "127.0.0.1",
+    "127.0.0.1:80",
+    "127.0.0.1:443",
+    "localhost:80",
+    "192.168.0.1",
+    "10.0.0.1",
+    "internal",
+    "intranet",
+};
+const size_t PL_HOST_VALUES_N =
+    sizeof(PL_HOST_VALUES) / sizeof(PL_HOST_VALUES[0]);
+
+const char *const PL_USER_AGENTS[] = {
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+    "(KHTML, like Gecko) Chrome/124.0 Safari/537.36",
+    "Mozilla/5.0 (X11; Linux x86_64; rv:126.0) Gecko/20100101 Firefox/126.0",
+    "Mozilla/5.0 (iPhone; CPU iPhone OS 17_4 like Mac OS X) "
+    "AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Mobile/15E148 Safari/604.1",
+    "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)",
+    "Mozilla/5.0 (compatible; bingbot/2.0; +http://www.bing.com/bingbot.htm)",
+    "curl/8.7.1",
+    "Wget/1.21.4",
+};
+const size_t PL_USER_AGENTS_N =
+    sizeof(PL_USER_AGENTS) / sizeof(PL_USER_AGENTS[0]);
+
 const char *const PL_PATH_SUFFIXES[] = {
     "%00",
     "%0d",

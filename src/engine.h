@@ -30,8 +30,11 @@ typedef enum {
     TECH_URL_REWRITE = 1 << 2,  /* X-Original-URL e amigos     */
     TECH_PATH        = 1 << 3,  /* mutacoes de caminho         */
     TECH_CASE        = 1 << 4,  /* troca de caixa no path      */
-    TECH_ALL         = 0x1F,
+    TECH_HOST        = 1 << 5,  /* spoof de Host header        */
+    TECH_ALL         = 0x3F,
 } tech_mask_t;
+
+#define MATCH_MAX 64
 
 typedef struct {
     http_config_t http;
@@ -45,6 +48,20 @@ typedef struct {
     int           n_extra_headers;
     char *const  *extra_paths;     /* mutacoes de path extra (com %s)   */
     int           n_extra_paths;
+
+    /* v0.3 */
+    int   combine;       /* combina tecnicas (header+path, verb+path) */
+    int   rotate_ua;     /* rotaciona User-Agent por requisicao       */
+    int   quiet;         /* so hits + resumo                          */
+    int   verbose;       /* mostra erros de transporte                */
+    int   calibrate;     /* 1 = calibra com path aleatorio (anti-FP)  */
+    int   show_curl;     /* 1 = imprime curl reproduzivel por hit     */
+
+    /* match/filter engine (estilo ffuf) */
+    int   mc[MATCH_MAX]; int n_mc;   /* match codes   */
+    int   fc[MATCH_MAX]; int n_fc;   /* filter codes  */
+    long  fs[MATCH_MAX]; int n_fs;   /* filter sizes  */
+    long  fw[MATCH_MAX]; int n_fw;   /* filter words  */
 } engine_opts_t;
 
 /*

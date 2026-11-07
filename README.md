@@ -26,13 +26,17 @@ Unauthorized`.** Inspirada em `nomore403`, porém reescrita do zero com
 |---|---|
 | **Verb tampering** | ~18 métodos HTTP: `GET`, `POST`, `PUT`, `PATCH`, `TRACE`, `PROPFIND`, `MKCOL`, `DEBUG`... |
 | **Headers de origem** | `X-Forwarded-For`, `X-Real-IP`, `X-Custom-IP-Authorization`, `CF-Connecting-IP` e outros, com `127.0.0.1`, `localhost`, `::1`... |
-| **Reescrita de URL** | `X-Original-URL`, `X-Rewrite-URL`, `Referer`... apontando para o caminho protegido |
+| **Reescrita de URL + Host** | `X-Original-URL`, `X-Rewrite-URL`, `Referer`... e spoof de **`Host`** (`localhost`, `127.0.0.1`...) |
 | **Mutações de path** | `/path/`, `/path/..;/`, `/%2e/path`, troca de caixa, e **Unicode/double-encoding** (`%252f`, `%c0%af`, `%ef%bc%8f`) |
-| **Baseline inteligente** | compara status + tamanho + nº de palavras com a requisição original e marca `<== BYPASS?` o que escapa do 4xx |
-| **Concorrência** | pool de threads POSIX — binário único, sem dependências de runtime |
+| **Técnicas combinadas** | `--combine` cruza header+path e verb+path num mesmo request |
+| **Autenticado** | `-H 'Cookie: ...'` (repetível) aplica headers fixos a toda requisição |
+| **Match / filter** | estilo ffuf: `-mc`/`-fc` (status), `-fs` (tamanho), `-fw` (palavras) |
+| **Anti falso-positivo** | calibra com um path aleatório (soft-404/wildcard) antes de comparar |
+| **Reproduzir** | imprime o `curl` exato de cada hit (e grava na coluna `curl` do JSON/CSV) |
+| **Evasão de rate-limit** | backoff automático em `429`, `--retries`, `--random-agent`, `--http1.0/--http2` |
+| **Concorrência** | pool de threads POSIX com barra de progresso — binário único, sem runtime |
 | **Batch & wordlists** | `-f urls.txt` (ou stdin), `--headers` e `--paths` para listas próprias |
-| **Saída** | `JSON` ou `CSV` (`-o`) para integrar com outras ferramentas |
-| **Rede** | proxy (Burp/ZAP), rate limit, timeout, TLS inseguro e seleção de técnicas |
+| **Saída** | `JSON`/`CSV` (`-o`), modos `-s` (quiet) e `-v` (verbose) |
 
 ## Quick start
 
@@ -53,32 +57,55 @@ sudo make install                           # opcional: /usr/local/bin
 ```text
 uso: 403-bypass (-u <url> | -f <arquivo>) [opcoes]
 
-  -u, --url <url>        URL alvo
-  -f, --file <arquivo>   arquivo com uma URL por linha (batch; '-' = stdin)
+requisicao
+  -H, --header <h>       header fixo em TODA req (ex: 'Cookie: a=b'); repetivel
+  -A, --user-agent <ua>  User-Agent customizado
+      --random-agent     rotaciona o User-Agent por requisicao
+  -x, --proxy <url>      proxy (ex: http://127.0.0.1:8080)
+      --http1.0 / --http1.1 / --http2   forca a versao de HTTP
+      --ip <valor>       IP/host unico para os headers de spoof
+  -k, --insecure         nao validar certificado TLS
+  -L, --location         seguir redirecionamentos
+
+desempenho
   -t, --threads <n>      threads concorrentes (padrao 20)
   -T, --timeout <ms>     timeout por requisicao (padrao 7000)
       --delay <ms>       atraso apos cada requisicao (rate limit)
-  -x, --proxy <url>      proxy (ex: http://127.0.0.1:8080)
-  -A, --user-agent <ua>  User-Agent customizado
-      --ip <valor>       IP/host unico para os headers de spoof
+      --retries <n>      retries em erro de transporte
+
+tecnicas
+      --only <lista>     verb,ip,rewrite,path,case,host (padrao: todas)
+      --combine          tambem testa tecnicas combinadas (header+path, verb+path)
       --headers <arq>    wordlist de nomes de header extra
       --paths <arq>      wordlist de mutacoes de path ('%s' = path alvo)
-  -o, --output <arq>     salva resultados em arquivo ('-' = stdout)
+
+match / filter (estilo ffuf)
+      -mc <lista>        so conta como hit estes status (ex: 200,302)
+      -fc <lista>        ignora estes status
+      -fs <lista>        ignora estes tamanhos de corpo
+      -fw <lista>        ignora estas contagens de palavras
+      --no-calibrate     nao calibrar com path aleatorio
+
+saida
+  -o, --output <arq>     salva em arquivo ('-' = stdout)
       --format <fmt>     json | csv (inferido da extensao de -o)
-  -k, --insecure         nao validar certificado TLS
-  -L, --location         seguir redirecionamentos
-  -a, --all              mostrar todos os resultados (nao so os hits)
-      --only <lista>     tecnicas: verb,ip,rewrite,path,case
+  -a, --all              mostra todos os resultados, nao so os hits
+  -s, --quiet            so hits e resumo (sem banner/tabela)
+  -v, --verbose          mostra erros de transporte
+      --no-curl          nao imprimir o curl reproduzivel
 ```
 
 ### Exemplos
 
 ```bash
-# Só verb tampering e headers de IP, passando pelo Burp
-403-bypass -u https://alvo.tld/admin --only verb,ip -x http://127.0.0.1:8080
+# Area autenticada, aceitando so 200/302 como bypass
+403-bypass -u https://alvo.tld/admin -H 'Cookie: session=...' -mc 200,302
 
-# Batch: várias URLs de um arquivo, salvando em JSON
-403-bypass -f urls.txt -o resultado.json
+# Tudo + combinadas + rotacao de UA, salvando em JSON (com curl de cada hit)
+403-bypass -u https://alvo.tld/admin --combine --random-agent -o saida.json
+
+# Batch por um proxy, filtrando o tamanho da pagina de erro padrao
+403-bypass -f urls.txt -x http://127.0.0.1:8080 -fs 0
 
 # Wordlists próprias de headers e paths, saída CSV
 403-bypass -u https://alvo.tld/x --headers hdrs.txt --paths paths.txt -o r.csv
@@ -86,7 +113,7 @@ uso: 403-bypass (-u <url> | -f <arquivo>) [opcoes]
 
 O arquivo de `--paths` usa `%s` como marcador do caminho alvo, um por linha
 (`%s/`, `%s%2e%2e%2f`, `%s/admin`). A saída CSV/JSON traz: `target, technique,
-method, url, headers, status, length, words, ms, hit`.
+method, url, headers, status, length, words, ms, hit, curl`.
 
 ### Lendo a saída
 
@@ -99,6 +126,16 @@ cod  tecnica     metodo    tamanho  palavras  payload
 - **cod** — status HTTP (verde = 2xx, ciano = 3xx, vermelho = 4xx).
 - **tamanho/palavras** — do corpo da resposta, comparados com a baseline.
 - **`<== BYPASS?`** — candidato promissor; **sempre valide manualmente**.
+
+## Testes
+
+Há um teste end-to-end que sobe um mock server e verifica que o scanner
+realmente detecta os bypasses (via método, header e path) e respeita o
+`match-code`. Roda no CI a cada push:
+
+```bash
+make test
+```
 
 ## Arte
 
