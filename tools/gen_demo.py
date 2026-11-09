@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Render the terminal-style demo art for 403-bypass into assets/ (dark + light).
 
-Reuses the CentralTech/grimh3xx brand toolchain (JBM font embedding) from the
+Reuses the grimh3xx/grimh3xx brand toolchain (JBM font embedding) from the
 sibling `github-profile` repo so the artwork matches the rest of the profile.
 
 Usage: python3 tools/gen_demo.py

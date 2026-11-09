@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Render the README banner + social preview for 403-bypass into docs/.
 
-Same model as the rest of the grimh3xx profile (CentralTech brand): reuses
+Same model as the rest of the grimh3xx profile (grimh3xx brand): reuses
 brand.py (palette + JBM/Inter font embedding) from the sibling github-profile
 repo. Mirrors scripts/repo_art.py:readme_banner / social.
 
@@ -73,7 +73,7 @@ def readme_banner():
     w, h = 1000, 220
     inner = (
         f'<text x="48" y="58" font-family="{MONO}" font-size="12" letter-spacing="3" '
-        f'fill="{TH["muted"]}"><tspan fill="{TH["accent2"]}">●</tspan>  CENTRALTECH  ·  GRIMH3XX</text>'
+        f'fill="{TH["muted"]}"><tspan fill="{TH["accent2"]}">●</tspan>  GRIMH3XX</text>'
         + wordmark(46, 122, NAME, 54)
         + f'<text x="48" y="158" font-family="{SANS}" font-size="18" fill="{TH["text"]}">{escape(TAGLINE)}</text>'
         + chips(TAGS, 48, 176, 12)
@@ -86,13 +86,13 @@ def social():
     size = min(110, int(2000 / max(len(NAME), 8)))
     inner = (
         f'<text x="96" y="150" font-family="{MONO}" font-size="20" letter-spacing="4" '
-        f'fill="{TH["muted"]}"><tspan fill="{TH["accent2"]}">●</tspan>  CENTRALTECH  ·  GRIMH3XX</text>'
+        f'fill="{TH["muted"]}"><tspan fill="{TH["accent2"]}">●</tspan>  GRIMH3XX</text>'
         + wordmark(90, 300, NAME, size)
         + f'<text x="96" y="376" font-family="{SANS}" font-size="36" fill="{TH["text"]}">{escape(TAGLINE)}</text>'
         + chips(TAGS, 96, 420, 22)
         + f'<path d="M96 540H{w - 96}" stroke="{TH["border"]}"/>'
         + f'<text x="96" y="584" font-family="{MONO}" font-size="22" fill="{TH["muted"]}">github.com/grimh3xx</text>'
-        + f'<text x="{w - 96}" y="584" text-anchor="end" font-family="{MONO}" font-size="22" fill="{TH["muted"]}">centraltechpc.com</text>'
+        + f'<text x="{w - 96}" y="584" text-anchor="end" font-family="{MONO}" font-size="22" fill="{TH["muted"]}">github.com/grimh3xx</text>'
     )
     return finish(basesvg(w, h, inner), {("JBM", 400), ("JBM", 800), ("INT", 400)})
 
